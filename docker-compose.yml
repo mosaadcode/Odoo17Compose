@@ -1,24 +1,32 @@
 version: '2'
 services:
   db:
-    image: postgres:16
+    image: postgres:14.1-alpine
+    container_name: medad-db
     user: root
+    networks:
+      - ourweb
+    ports:
+      - 5432:5432
     environment:
       - POSTGRES_USER=odoo
       - POSTGRES_PASSWORD=odoo17@2023
       - POSTGRES_DB=postgres
     restart: always             # run as a service
     volumes:
-        - ./postgresql:/var/lib/postgresql/data
+        - /opt/ourcode/odoo/medad/postgresql:/var/lib/postgresql/data
 
   odoo17:
     image: odoo:17
+    container_name: medad-odoo
     user: root
+    networks:
+      - ourweb
     depends_on:
       - db
     ports:
-      - "10017:8069"
-      - "20017:8072" # live chat
+      - "10016:8069"
+      - "20016:8072" # live chat
     tty: true
     command: --
     environment:
@@ -29,7 +37,11 @@ services:
       #- /etc/timezone:/etc/timezone:ro
       #- /etc/localtime:/etc/localtime:ro
       # - ./entrypoint.sh:/entrypoint.sh   # if you want to install additional Python packages, uncomment this line!
-      - ./addons:/mnt/extra-addons
-      - ./etc:/etc/odoo
+      - /opt/ourcode/odoo/medad/addons:/mnt/extra-addons
+      - /opt/ourcode/odoo/medad/etc:/etc/odoo
     restart: always             # run as a service
+networks:
+  ourweb:
+    external: true
+    name: ourweb
     
